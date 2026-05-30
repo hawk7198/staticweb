@@ -32,3 +32,31 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_image(nodes):
+    result = []
+    for node in nodes:
+        if len(extract_markdown_images(node.text)) == 0 and node.text != "":
+            result.append(node)
+        else:
+            for image in extract_markdown_images(node.text):
+                sections = node.text.split(f"![{image[0]}]({image[1]})", 1)
+                result.append(TextNode(sections[0], TextType.TEXT))
+                result.append(TextNode(image[0], TextType.IMAGE, image[1]))
+                node.text = sections[1]
+    return result
+
+def split_nodes_link(nodes):
+    result = []
+    for node in nodes:
+        if len(extract_markdown_links(node.text)) == 0 and node.text != "":
+            result.append(node)
+        else:
+            for link in extract_markdown_links(node.text):
+                sections = node.text.split(f"[{link[0]}]({link[1]})", 1)
+                result.append(TextNode(sections[0], TextType.TEXT))
+                result.append(TextNode(link[0], TextType.LINK, link[1]))
+                node.text = sections[1]
+    return result
+
+        
